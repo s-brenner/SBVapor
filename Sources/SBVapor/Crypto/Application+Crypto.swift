@@ -52,6 +52,7 @@ extension Application {
                     symmetricKeyDatabase: symmetricKeyDatabase,
                     privateKey: privateKey
                 )
+            application.logger.notice("Crypto initialized")
         }
         
         fileprivate let application: Application
