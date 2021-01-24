@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SBVapor",
     platforms: [
-       .macOS(.v11)
+       .macOS(.v10_15)
     ],
     products: [
         .library(
