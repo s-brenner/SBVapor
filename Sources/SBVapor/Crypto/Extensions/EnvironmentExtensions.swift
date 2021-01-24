@@ -2,7 +2,7 @@ import Vapor
 
 extension Environment {
     
-    typealias PrivateKey = P256.KeyAgreement.PrivateKey
+    typealias PrivateKey = Application.Crypto.KeyAgreement.PrivateKey
     
     typealias CryptoError = Application.Crypto.Error
     

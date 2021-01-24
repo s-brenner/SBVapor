@@ -4,6 +4,8 @@ extension Application {
     
     public struct Crypto {
         
+        typealias KeyAgreement = P256.KeyAgreement
+        
         public enum Error: LocalizedError {
             case noEnvironmentValue(_ key: String)
             case notBase64Encoded(_ key: String, _ value: String)
@@ -68,22 +70,22 @@ extension Application {
             
             /// Yields a key unique to a particular client and this server.
             /// Use this strategy to communicate to a particular user.
-            case asymmetric(salt: Data, devicePublicKey: Data)
+            case asymmetric(_ salt: Salt, _ devicePublicKey: Data)
         }
         
-        public func symmetricKey(strategy: EncryptionStrategy) throws -> SymmetricKey {
+        public func symmetricKey(_ strategy: EncryptionStrategy) throws -> SymmetricKey {
             switch strategy {
             case .symmetricClient:
                 return storage.symmetricKeyClient
             case .symmetricDatabase:
                 return storage.symmetricKeyDatabase
             case .asymmetric(let salt, let devicePublicKey):
-                let devicePublicKey = try P256.KeyAgreement.PublicKey(x963Representation: devicePublicKey)
+                let devicePublicKey = try KeyAgreement.PublicKey(x963Representation: devicePublicKey)
                 return try storage.privateKey
                     .sharedSecretFromKeyAgreement(with: devicePublicKey)
                     .hkdfDerivedSymmetricKey(
                         using: SHA256.self,
-                        salt: salt,
+                        salt: salt.data,
                         sharedInfo: Data(),
                         outputByteCount: 32
                     )
@@ -102,12 +104,12 @@ private extension Application.Crypto {
         
         let symmetricKeyDatabase: SymmetricKey
         
-        let privateKey: P256.KeyAgreement.PrivateKey
+        let privateKey: KeyAgreement.PrivateKey
         
         init(
             symmetricKeyClient: SymmetricKey,
             symmetricKeyDatabase: SymmetricKey,
-            privateKey: P256.KeyAgreement.PrivateKey
+            privateKey: KeyAgreement.PrivateKey
         ) {
             self.symmetricKeyClient = symmetricKeyClient
             self.symmetricKeyDatabase = symmetricKeyDatabase
