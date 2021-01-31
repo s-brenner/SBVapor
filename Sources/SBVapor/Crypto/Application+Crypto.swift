@@ -48,7 +48,7 @@ extension Application {
             let privateKey = Environment
                 .privateKey("PRIVATE_KEY")
                 .fatalError { $0.errorDescription! }
-            self.application.storage[Key.self] =
+            application.storage[Key.self] =
                 .init(
                     symmetricKeyClient: symmetricKeyClient,
                     symmetricKeyDatabase: symmetricKeyDatabase,
