@@ -91,6 +91,9 @@ extension Application {
                     )
             }
         }
+        
+        /// An ANSI x9.63 representation of the public key.
+        public var publicKey: Data { storage.privateKey.publicKey.x963Representation }
     }
     
     public var crypto: Crypto { .init(application: self) }
