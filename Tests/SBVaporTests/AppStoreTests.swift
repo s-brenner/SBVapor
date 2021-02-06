@@ -22,10 +22,10 @@ final class AppStoreTests: XCTestCase {
             XCTAssertEqual(body.environment, .sandbox)
             XCTAssertEqual(body.receipt?.receiptType, .productionSandbox)
             XCTAssertEqual(body.status, .valid)
-            XCTAssertEqual(body.latestReceiptInfo?.first?.isTrialPeriod, false)
-            XCTAssertEqual(body.latestReceiptInfo?.first?.isInIntroOfferPeriod, false)
-            XCTAssertEqual(body.pendingRenewalInfo?.first?.autoRenewStatus, .customerDisabled)
-            XCTAssertEqual(body.pendingRenewalInfo?.first?.expirationIntent, .customerVoluntarilyCancelled)
+            XCTAssertEqual(body.latestReceiptInfo.first?.isTrialPeriod, false)
+            XCTAssertEqual(body.latestReceiptInfo.first?.isInIntroOfferPeriod, false)
+            XCTAssertEqual(body.pendingRenewalInfo.first?.autoRenewStatus, .customerDisabled)
+            XCTAssertEqual(body.pendingRenewalInfo.first?.expirationIntent, .customerVoluntarilyCancelled)
             print("\n\n")
             print(body.prettyPrinted)
             print("\n\n")
@@ -39,8 +39,7 @@ fileprivate extension AppStoreTests {
     struct RouteController: RouteCollection {
         
         func boot(routes: RoutesBuilder) throws {
-            let appStoreRoute = routes//.grouped("app_store")
-            appStoreRoute.post("app_store", use: verifyReceipt)
+            routes.post("app_store", use: verifyReceipt)
         }
         
         func verifyReceipt(req: Request) throws -> EventLoopFuture<AppStoreReceipts.ResponseBody> {

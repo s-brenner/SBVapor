@@ -44,38 +44,37 @@ public enum AppStoreReceipts {
          
          A value of 1 indicates a temporary issue; retry validation for this receipt at a later time. A value of 0 indicates an unresolvable issue; do not retry validation for this receipt. Only applicable to status codes 21100-21199.
          */
-        public let isRetryable: Bool?
+        public let isRetryable: Bool
         
         /// The latest Base64 encoded app receipt. Only returned for receipts that contain auto-renewable subscriptions.
-        public let latestReceipt: String?
+        public let latestReceipt: String
         
         /**
          An array that contains all in-app purchase transactions. This excludes transactions for consumable products that have been marked as finished by your app. Only returned for receipts that contain auto-renewable subscriptions.
          */
-        public let latestReceiptInfo: [LatestReceiptInfo]?
+        public let latestReceiptInfo: [LatestReceiptInfo]
         public typealias LatestReceiptInfo = Application.AppStore.LatestReceiptInfo
         
         /**
          In the JSON file, an array where each element contains the pending renewal information for each auto-renewable subscription identified by the product_id. Only returned for app receipts that contain auto-renewable subscriptions.
          */
-        public let pendingRenewalInfo: [PendingRenewalInfo]?
+        public let pendingRenewalInfo: [PendingRenewalInfo]
         public typealias PendingRenewalInfo = Application.AppStore.PendingRenewalInfo
         
         /// A JSON representation of the receipt that was sent for verification.
         public let receipt: Receipt?
         
         /// Either 0 if the receipt is valid, or a status code if there is an error. The status code reflects the status of the app receipt as a whole.
-        public let status: Status?
+        public let status: Status
         
         init(_ body: InternalResponseBody) {
-            print(body.prettyPrinted)
             environment = Environment(rawValue: body.environment ?? "")
-            isRetryable = body.isRetryable
-            latestReceipt = body.latestReceipt
-            latestReceiptInfo = body.latestReceiptInfo?.compactMap { LatestReceiptInfo($0) }
-            pendingRenewalInfo = body.pendingRenewalInfo?.compactMap { PendingRenewalInfo($0) }
+            isRetryable = body.isRetryable ?? false
+            latestReceipt = body.latestReceipt ?? ""
+            latestReceiptInfo = body.latestReceiptInfo?.compactMap { LatestReceiptInfo($0) } ?? []
+            pendingRenewalInfo = body.pendingRenewalInfo?.compactMap { PendingRenewalInfo($0) } ?? []
             receipt = Receipt(body.receipt)
-            status = Status(rawValue: body.status ?? -1)
+            status = Status(rawValue: body.status) ?? .unknown
         }
         
         public struct Receipt: Content, ReceiptRepresentable {
@@ -149,6 +148,7 @@ public enum AppStoreReceipts {
         }
         
         public enum Status: Int, Codable, CustomStringConvertible {
+            case unknown = -1
             case valid = 0
             case incorrectRequestMethod = 21000
             case malformedReceiptData = 21002
@@ -165,6 +165,8 @@ public enum AppStoreReceipts {
             
             public var message: String {
                 switch self {
+                case .unknown:
+                    return "The response did not include a status."
                 case .valid:
                     return "The request was valid."
                 case .incorrectRequestMethod:
@@ -194,6 +196,7 @@ public enum AppStoreReceipts {
             
             public var tryAgain: Bool {
                 switch self {
+                case .unknown: return false
                 case .valid: return false
                 case .incorrectRequestMethod: return false
                 case .malformedReceiptData: return true
@@ -229,7 +232,7 @@ public enum AppStoreReceipts {
         let latestReceiptInfo: [Application.AppStore.InternalLatestReceiptInfo]?
         let pendingRenewalInfo: [Application.AppStore.InternalPendingRenewalInfo]?
         let receipt: Receipt?
-        let status: Int?
+        let status: Int
         
         struct Receipt: Content {
             
