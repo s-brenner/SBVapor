@@ -11,6 +11,12 @@ public struct EncryptedContent: Content {
         self.id = id
         self.value = value.base64EncodedString
     }
+    
+    public init(id: String, value: String) {
+        #warning("This initialier is for testing purposes only")
+        self.id = id
+        self.value = value
+    }
 }
 
 public extension EncryptedContent {
