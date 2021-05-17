@@ -94,6 +94,22 @@ extension Application {
         
         /// An ANSI x9.63 representation of the public key.
         public var publicKey: Data { storage.privateKey.publicKey.x963Representation }
+        
+        public func encrypt<Item>(_ item: Item, strategy: EncryptionStrategy) throws -> String
+        where Item: Encodable {
+            let data = try JSONEncoder().encode(item)
+            return try Encryption.encrypt(data, with: symmetricKey(strategy)).get().base64EncodedString
+        }
+        
+        public func decrypt<Item>(
+            _ base64Encoded: String,
+            into item: Item.Type = Item.self,
+            strategy: EncryptionStrategy
+        ) throws -> Item
+        where Item: Decodable {
+            let data = try Encryption.decrypt(base64Encoded, with: symmetricKey(strategy)).get()
+            return try JSONDecoder().decode(item, from: data)
+        }
     }
     
     public var crypto: Crypto { .init(application: self) }
