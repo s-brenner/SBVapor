@@ -19,4 +19,20 @@ public struct UserDevice: Content {
     
     /// An alphanumeric string that uniquely identifies a device to the app’s vendor.
     public let identifierForVendor: String
+    
+    public init(
+        applicationVersion: String,
+        name: String,
+        systemName: String,
+        systemVersion: String,
+        model: String,
+        identifierForVendor: String
+    ) {
+        self.applicationVersion = applicationVersion
+        self.name = name
+        self.systemName = systemName
+        self.systemVersion = systemVersion
+        self.model = model
+        self.identifierForVendor = identifierForVendor
+    }
 }
