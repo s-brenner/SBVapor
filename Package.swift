@@ -9,10 +9,7 @@ let package = Package(
        .macOS(.v10_15)
     ],
     products: [
-        .library(
-            name: "SBVapor",
-            targets: ["SBVapor"]
-        ),
+        .library(name: "SBVapor", targets: ["SBVapor"]),
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
@@ -24,10 +21,10 @@ let package = Package(
             .product(name: "Fluent", package: "fluent"),
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
             .product(name: "Vapor", package: "vapor"),
+            .product(name: "XCTVapor", package: "vapor"),
         ]),
         .testTarget(name: "SBVaporTests", dependencies: [
             .target(name: "SBVapor"),
-            .product(name: "XCTVapor", package: "vapor"),
         ]),
     ]
 )
