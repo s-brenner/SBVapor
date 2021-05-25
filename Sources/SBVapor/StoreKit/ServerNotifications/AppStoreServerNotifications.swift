@@ -59,7 +59,7 @@ public enum AppStoreServerNotifications {
             case production = "PROD"
             case sandbox = "Sandbox"
             
-            var environment: AppStoreReceipts.ResponseBody.Environment {
+            public var environment: AppStoreReceipts.ResponseBody.Environment {
                 switch self {
                 case .production: return .production
                 case .sandbox: return .sandbox
