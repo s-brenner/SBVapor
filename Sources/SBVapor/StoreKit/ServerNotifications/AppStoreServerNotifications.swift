@@ -55,9 +55,16 @@ public enum AppStoreServerNotifications {
             bundleVersion = body.bundleVersion
         }
         
-        public enum Environment: String, Codable {
+        public enum Environment: String, Codable, AppStoreEnvironmentRepresentable {
             case production = "PROD"
             case sandbox = "Sandbox"
+            
+            var environment: AppStoreReceipts.ResponseBody.Environment {
+                switch self {
+                case .production: return .production
+                case .sandbox: return .sandbox
+                }
+            }
         }
     }
 }
