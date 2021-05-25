@@ -3,7 +3,7 @@ import Foundation
 extension Data {
     
     func decode<T: Decodable>(
-        as type: T.Type,
+        as type: T.Type = T.self,
         using decoder: JSONDecoder = .init()
     ) -> Result<T, DecodingError> {
         do {
