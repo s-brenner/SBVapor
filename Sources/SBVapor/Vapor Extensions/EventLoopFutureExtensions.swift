@@ -13,4 +13,9 @@ public extension EventLoopFuture {
             }
         }
     }
+    
+    func notice(_ message: Logger.Message, on logger: Logger) -> EventLoopFuture<Value> {
+        logger.notice(message)
+        return self
+    }
 }
