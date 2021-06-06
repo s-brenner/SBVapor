@@ -14,8 +14,14 @@ public extension EventLoopFuture {
         }
     }
     
-    func notice(_ message: Logger.Message, on logger: Logger) -> EventLoopFuture<Value> {
-        logger.notice(message)
+    func log(
+        level: Logger.Level,
+        _ message: Logger.Message,
+        metadata: Logger.Metadata? = nil,
+        source: String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        logger.log(level: level, message, metadata: metadata, source: source)
         return self
     }
 }
