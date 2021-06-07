@@ -41,7 +41,7 @@ public extension EventLoopFuture {
     func logTrace(
         _ message: @autoclosure () -> Logger.Message,
         metadata: @autoclosure () -> Logger.Metadata? = nil,
-        source: @autoclosure() -> String? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
         log(level: .trace, message(), metadata: metadata(), source: source(), on: logger)
@@ -57,7 +57,7 @@ public extension EventLoopFuture {
     func logInfo(
         _ message: @autoclosure () -> Logger.Message,
         metadata: @autoclosure () -> Logger.Metadata? = nil,
-        source: @autoclosure() -> String? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
         log(level: .info, message(), metadata: metadata(), source: source(), on: logger)
@@ -73,7 +73,7 @@ public extension EventLoopFuture {
     func logNotice(
         _ message: @autoclosure () -> Logger.Message,
         metadata: @autoclosure () -> Logger.Metadata? = nil,
-        source: @autoclosure() -> String? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
         log(level: .notice, message(), metadata: metadata(), source: source(), on: logger)
@@ -89,7 +89,7 @@ public extension EventLoopFuture {
     func logWarning(
         _ message: @autoclosure () -> Logger.Message,
         metadata: @autoclosure () -> Logger.Metadata? = nil,
-        source: @autoclosure() -> String? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
         log(level: .warning, message(), metadata: metadata(), source: source(), on: logger)
@@ -105,7 +105,7 @@ public extension EventLoopFuture {
     func logError(
         _ message: @autoclosure () -> Logger.Message,
         metadata: @autoclosure () -> Logger.Metadata? = nil,
-        source: @autoclosure() -> String? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
         log(level: .error, message(), metadata: metadata(), source: source(), on: logger)
@@ -126,9 +126,25 @@ public extension EventLoopFuture {
     func logCritical(
         _ message: @autoclosure () -> Logger.Message,
         metadata: @autoclosure () -> Logger.Metadata? = nil,
-        source: @autoclosure() -> String? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
         log(level: .critical, message(), metadata: metadata(), source: source(), on: logger)
+    }
+    
+    /// Log an error message to a provided logger when the current `EventLoopFuture<Value>` is in an error state.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - logger: The logger on which to log the message.
+    ///   - message: The message to be logged.
+    ///   - error: The error value of this `EventLoopFuture<Value>`.
+    /// - Returns: The current `EventLoopFuture<Value>`.
+    func logErrorState(
+        on logger: Logger,
+        _ message: @escaping (_ error: Error) -> Logger.Message
+    ) -> EventLoopFuture<Value> {
+        flatMapError { [unowned self] error in
+            logError(message(error), on: logger)
+        }
     }
 }
