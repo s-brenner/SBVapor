@@ -13,15 +13,122 @@ public extension EventLoopFuture {
             }
         }
     }
+}
+
+
+// MARK: - Logging
+
+public extension EventLoopFuture {
     
-    func log(
+    internal func log(
         level: Logger.Level,
-        _ message: Logger.Message,
-        metadata: Logger.Metadata? = nil,
-        source: String? = nil,
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure () -> String? = nil,
         on logger: Logger
     ) -> EventLoopFuture<Value> {
-        logger.log(level: level, message, metadata: metadata, source: source)
+        logger.log(level: max(level, logger.logLevel), message(), metadata: metadata(), source: source())
         return self
+    }
+    
+    /// Appropriate for messages that contain information normally of use only when debugging a program.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - message: The message to be logged. `message` can be used with any string interpolation literal.
+    ///   - metadata: One-off metadata to attach to this log message.
+    ///   - source: The source this log messages originates to.
+    ///   - logger: The logger on which to log the message.
+    func logTrace(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure() -> String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        log(level: .trace, message(), metadata: metadata(), source: source(), on: logger)
+    }
+    
+    /// Appropriate for informational messages.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - message: The message to be logged. `message` can be used with any string interpolation literal.
+    ///   - metadata: One-off metadata to attach to this log message.
+    ///   - source: The source this log messages originates to.
+    ///   - logger: The logger on which to log the message.
+    func logInfo(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure() -> String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        log(level: .info, message(), metadata: metadata(), source: source(), on: logger)
+    }
+    
+    /// Appropriate for conditions that are not error conditions, but that may require special handling.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - message: The message to be logged. `message` can be used with any string interpolation literal.
+    ///   - metadata: One-off metadata to attach to this log message.
+    ///   - source: The source this log messages originates to.
+    ///   - logger: The logger on which to log the message.
+    func logNotice(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure() -> String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        log(level: .notice, message(), metadata: metadata(), source: source(), on: logger)
+    }
+    
+    /// Appropriate for messages that are not error conditions, but more severe than `.notice`.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - message: The message to be logged. `message` can be used with any string interpolation literal.
+    ///   - metadata: One-off metadata to attach to this log message.
+    ///   - source: The source this log messages originates to.
+    ///   - logger: The logger on which to log the message.
+    func logWarning(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure() -> String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        log(level: .warning, message(), metadata: metadata(), source: source(), on: logger)
+    }
+    
+    /// Appropriate for error conditions.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - message: The message to be logged. `message` can be used with any string interpolation literal.
+    ///   - metadata: One-off metadata to attach to this log message.
+    ///   - source: The source this log messages originates to.
+    ///   - logger: The logger on which to log the message.
+    func logError(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure() -> String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        log(level: .error, message(), metadata: metadata(), source: source(), on: logger)
+    }
+    
+    /// Appropriate for critical error conditions that usually require immediate
+    /// attention.
+    ///
+    /// When a `critical` message is logged, the logging backend (`LogHandler`) is free to perform
+    /// more heavy-weight operations to capture system state (such as capturing stack traces) to facilitate
+    /// debugging.
+    /// - Author: - Scott Brenner | SBVapor
+    /// - Parameters:
+    ///   - message: The message to be logged. `message` can be used with any string interpolation literal.
+    ///   - metadata: One-off metadata to attach to this log message.
+    ///   - source: The source this log messages originates to.
+    ///   - logger: The logger on which to log the message.
+    func logCritical(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        source: @autoclosure() -> String? = nil,
+        on logger: Logger
+    ) -> EventLoopFuture<Value> {
+        log(level: .critical, message(), metadata: metadata(), source: source(), on: logger)
     }
 }
