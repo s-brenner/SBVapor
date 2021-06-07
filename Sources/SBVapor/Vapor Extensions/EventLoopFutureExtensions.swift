@@ -138,13 +138,14 @@ public extension EventLoopFuture {
     ///   - logger: The logger on which to log the message.
     ///   - message: The message to be logged.
     ///   - error: The error value of this `EventLoopFuture<Value>`.
-    /// - Returns: The current `EventLoopFuture<Value>`.
+    /// - Returns: A failed `EventLoopFuture<Value>`.
     func logErrorState(
         on logger: Logger,
         _ message: @escaping (_ error: Error) -> Logger.Message
     ) -> EventLoopFuture<Value> {
-        flatMapError { [unowned self] error in
-            logError(message(error), on: logger)
+        flatMapError { [eventLoop] error in
+            logger.log(level: max(.error, logger.logLevel), message(error))
+            return eventLoop.future(error: error)
         }
     }
 }
