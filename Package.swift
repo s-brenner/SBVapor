@@ -1,12 +1,11 @@
-// swift-tools-version:5.3
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version:5.5
 
 import PackageDescription
 
 let package = Package(
     name: "SBVapor",
     platforms: [
-       .macOS(.v10_15)
+       .macOS(.v12)
     ],
     products: [
         .library(name: "SBVapor", targets: ["SBVapor"]),
@@ -14,12 +13,14 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/fluent.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.0.0"),
+        .package(url: "https://github.com/vapor/jwt.git", from: "4.0.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
     ],
     targets: [
         .target(name: "SBVapor", dependencies: [
             .product(name: "Fluent", package: "fluent"),
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+            .product(name: "JWT", package: "jwt"),
             .product(name: "Vapor", package: "vapor"),
             .product(name: "XCTVapor", package: "vapor"),
         ]),

@@ -1,11 +1,16 @@
-import Vapor
+import Foundation
 
 public extension Application.AppStore {
     
-    enum Environment: String, Codable, AppStoreEnvironmentRepresentable {
-        case sandbox = "Sandbox"
+    enum Environment: String {
         case production = "Production"
+        case sandbox = "Sandbox"
         
-        var environment: Environment { self }
+        var host: String {
+            switch self {
+            case .production: return "api.storekit.itunes.apple.com"
+            case .sandbox: return "api.storekit-sandbox.itunes.apple.com"
+            }
+        }
     }
 }

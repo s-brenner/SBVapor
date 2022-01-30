@@ -1,4 +1,6 @@
+import JWT
 import Vapor
+import Foundation
 
 public extension Application.AppStore {
     
@@ -6,100 +8,197 @@ public extension Application.AppStore {
         
         let httpClient: HTTPClient
         
-        let password: String
+        let issuerId: String
         
-        enum Endpoint: String {
-            case production = "https://buy.itunes.apple.com/verifyReceipt"
-            case sandbox = "https://sandbox.itunes.apple.com/verifyReceipt"
-            
-            var url: URL { URL(string: rawValue)! }
-        }
+        let bundleId: String
+        
+        let privateKeyId: JWKIdentifier
+        
+        let privateKey: ECDSAKey
     }
 }
 
 public extension Application.AppStore.Client {
-
-    func verifyReceipt(
-        receiptData: Data,
-        excludeOldTransactions: Bool? = nil,
-        on req: Request
-    ) -> EventLoopFuture<AppStoreReceipts.ResponseBody> {
-        let body = AppStoreReceipts.RequestBody(
-            receiptData: receiptData,
-            password: password,
-            excludeOldTransactions: excludeOldTransactions
+    
+    func getTransactionHistory(
+        environment: Application.AppStore.Environment = .production,
+        originalTransactionID: String,
+        revision: String? = nil
+    ) async throws -> Application.AppStore.HistoryResponse {
+        try await makeServerAPIRequest(
+            endpoint: .transactionHistory(revision: revision),
+            environment: environment,
+            originalTransactionID: originalTransactionID
         )
-        return verifyReceipt(body: body, endpoint: .production, on: req)
-            .flatMap { responseBody in
-                guard responseBody.status != .receiptFromTestEnvironment else {
-                    return verifyReceipt(body: body, endpoint: .sandbox, on: req)
+    }
+    
+    func getSubscriptionStatuses(
+        environment: Application.AppStore.Environment = .production,
+        originalTransactionID: String
+    ) async throws -> Application.AppStore.StatusResponse  {
+        try await makeServerAPIRequest(
+            endpoint: .subscriptionStatuses,
+            environment: environment,
+            originalTransactionID: originalTransactionID
+        )
+    }
+    
+    enum AppStoreError: AbortError {
+        case unauthorized
+        case appleServerError(AppleServerError)
+        case internalServerError
+        
+        public struct AppleServerError: Decodable {
+            
+            public let errorCode: Int
+            
+            public let errorMessage: String
+        }
+        
+        public var reason: String {
+            switch self {
+            case .unauthorized: return "The request is unauthorized; the JSON Web Token (JWT) is invalid."
+            case .appleServerError(let error): return error.errorMessage
+            case .internalServerError: return "An unknown error occurred."
+            }
+        }
+        
+        public var status: HTTPStatus {
+            switch self {
+            case .unauthorized: return .unauthorized
+            case .appleServerError(let error):
+                let prefix = "\(error.errorCode)".prefix(3)
+                switch prefix {
+                case "400": return .badRequest
+                case "404": return .notFound
+                case "500": return .internalServerError
+                default: return .custom(code: UInt(error.errorCode), reasonPhrase: error.errorMessage)
                 }
-                return req.eventLoop.future(responseBody)
+            case .internalServerError: return .internalServerError
             }
-    }
-    
-    enum Error: Swift.Error {
-        case decodingError(Swift.Error)
-        case passwordMismatch
-    }
-    
-    func handleServerNotification(on req: Request) -> Result<AppStoreServerNotifications.ResponseBody, Error> {
-        do {
-            let internalResponseBody = try req.content.decode(AppStoreServerNotifications.InternalResponseBody.self)
-            guard internalResponseBody.password == password else {
-                return .failure(.passwordMismatch)
-            }
-            return .success(.init(internalResponseBody))
-        } catch {
-            return .failure(.decodingError(error))
         }
     }
 }
 
-private extension Application.AppStore.Client {
+fileprivate extension Application.AppStore.Client {
     
-    func verifyReceipt(
-        body: AppStoreReceipts.RequestBody,
+    enum Endpoint {
+        case transactionHistory(revision: String?)
+        case subscriptionStatuses
+    }
+    
+    func makeServerAPIRequest<T: Decodable>(
         endpoint: Endpoint,
-        on req: Request
-    ) -> EventLoopFuture<AppStoreReceipts.ResponseBody> {
-        do {
-            let request = try HTTPClient.Request.make(with: body, url: endpoint.url)
-            return httpClient.execute(request: request, eventLoop: .delegate(on: req.eventLoop))
-                .flatMap { response in
-                    let byteBuffer = response.body ?? ByteBuffer(.init())
-                    let responseData = Data(byteBuffer.readableBytesView)
-                    let responseBody = responseData
-                        .decode(as: AppStoreReceipts.InternalResponseBody.self)
-                        .map { AppStoreReceipts.ResponseBody($0) }
-                    switch responseBody {
-                    case .success(let response):
-                        return req.eventLoop.future(response)
-                    case .failure(let error):
-                        return req.eventLoop.makeFailedFuture(error)
-                    }
-                }
-        } catch {
-            return req.eventLoop.makeFailedFuture(error)
+        environment: Application.AppStore.Environment,
+        originalTransactionID: String
+    ) async throws -> T {
+        let url = URL.appStoreServer(endpoint: endpoint, environment: environment, originalTransactionID: originalTransactionID)
+        let headers = HTTPHeaders.make(signedToken: try signedToken())
+        let request = try HTTPClient.Request(url: url, method: .GET, headers: headers)
+        let response = try await httpClient.execute(request: request).get()
+        if response.status == .unauthorized {
+            throw AppStoreError.unauthorized
         }
+        else if response.status == .ok, let body = response.body {
+            return try JSONDecoder().decode(T.self, from: body)
+        }
+        else if let body = response.body {
+            let error = try JSONDecoder().decode(AppStoreError.AppleServerError.self, from: body)
+            throw AppStoreError.appleServerError(error)
+        }
+        throw AppStoreError.internalServerError
     }
 }
 
-fileprivate extension HTTPClient.Request {
+fileprivate extension Application.AppStore.Client {
     
-    static func make(
-        with requestBody: AppStoreReceipts.RequestBody,
-        url: URL
-    ) throws -> HTTPClient.Request {
+    func signedToken() throws -> String {
+        try ServerAPIToken
+            .Payload(issuerID: issuerId, bundleID: bundleId)
+            .signed(keyID: privateKeyId, key: privateKey)
+    }
+    
+    enum ServerAPIToken {
+        
+        struct Payload: JWTPayload, Equatable {
+            
+            enum CodingKeys: String, CodingKey {
+                case issuer = "iss"
+                case issuedAt = "iat"
+                case expiration = "exp"
+                case audience = "aud"
+                case nonce
+                case bundleID = "bid"
+            }
+            
+            let issuer: IssuerClaim
+            
+            let issuedAt: IssuedAtClaim
+            
+            let expiration: ExpirationClaim
+            
+            let audience: AudienceClaim
+            
+            let nonce: String
+            
+            let bundleID: String
+            
+            init(
+                issuerID issuer: String,
+                issuedAt: Date = Date(),
+                bundleID: String
+            ) {
+                self.issuer = .init(value: issuer)
+                self.issuedAt = .init(value: issuedAt)
+                expiration = .init(value: issuedAt.addingTimeInterval(600))
+                audience = "appstoreconnect-v1"
+                nonce = UUID().uuidString
+                self.bundleID = bundleID
+            }
+            
+            func signed(keyID kid: JWKIdentifier, key: ECDSAKey) throws -> String {
+                let signers = JWTSigners()
+                signers.use(.es256(key: key), kid: kid)
+                return try signers.sign(self, typ: "JWT", kid: kid)
+            }
+            
+            func verify(using signer: JWTSigner) throws {
+                try audience.verifyIntendedAudience(includes: "appstoreconnect-v1")
+                try expiration.verifyNotExpired()
+            }
+        }
+    }
+
+}
+
+fileprivate extension URL {
+    
+    static func appStoreServer(endpoint: Application.AppStore.Client.Endpoint,
+                               environment: Application.AppStore.Environment,
+                               originalTransactionID: String
+    ) -> URL {
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "https"
+        urlComponents.host = environment.host
+        switch endpoint {
+        case .transactionHistory(let revision):
+            urlComponents.path = "/inApps/v1/history/\(originalTransactionID)"
+            if let revision = revision {
+                urlComponents.queryItems = [.init(name: "revision", value: revision)]
+            }
+        case .subscriptionStatuses:
+            urlComponents.path = "/inApps/v1/subscriptions/\(originalTransactionID)"
+        }
+        return urlComponents.url!
+    }
+}
+
+fileprivate extension HTTPHeaders {
+    
+    static func make(signedToken: String) -> HTTPHeaders {
         var headers = HTTPHeaders()
-        headers.add(name: .contentType, value: "application/json")
+        headers.add(name: .authorization, value: "Bearer \(signedToken)")
         headers.add(name: .userAgent, value: "ReservePayServer")
-        let body = try JSONEncoder().encode(requestBody)
-        return try HTTPClient.Request(
-            url: url,
-            method: .POST,
-            headers: headers,
-            body: .data(body)
-        )
+        return headers
     }
 }

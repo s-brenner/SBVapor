@@ -1,4 +1,4 @@
-protocol AppStoreEnvironmentRepresentable {
-    
-    var environment: AppStoreReceipts.ResponseBody.Environment { get }
-}
+//protocol AppStoreEnvironmentRepresentable {
+//
+//    var environment: AppStoreReceipts.ResponseBody.Environment { get }
+//}
