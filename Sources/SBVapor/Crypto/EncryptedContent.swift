@@ -13,7 +13,7 @@ public struct EncryptedContent: Content {
     }
     
     public init(id: String, value: String) {
-        #warning("This initialier is for testing purposes only")
+        #warning("This initializer is for testing purposes only")
         self.id = id
         self.value = value
     }

@@ -20,28 +20,28 @@ public extension Application.AppStore {
 
 public extension Application.AppStore.Client {
     
-    func getTransactionHistory(
-        environment: Application.AppStore.Environment = .production,
-        originalTransactionID: String,
-        revision: String? = nil
-    ) async throws -> Application.AppStore.HistoryResponse {
-        try await makeServerAPIRequest(
-            endpoint: .transactionHistory(revision: revision),
-            environment: environment,
-            originalTransactionID: originalTransactionID
-        )
-    }
+//    func getTransactionHistory(
+//        environment: Application.AppStore.Environment = .production,
+//        originalTransactionID: String,
+//        revision: String? = nil
+//    ) async throws -> Application.AppStore.HistoryResponse {
+//        try await makeServerAPIRequest(
+//            endpoint: .transactionHistory(revision: revision),
+//            environment: environment,
+//            originalTransactionID: originalTransactionID
+//        )
+//    }
     
-    func getSubscriptionStatuses(
-        environment: Application.AppStore.Environment = .production,
-        originalTransactionID: String
-    ) async throws -> Application.AppStore.StatusResponse  {
-        try await makeServerAPIRequest(
-            endpoint: .subscriptionStatuses,
-            environment: environment,
-            originalTransactionID: originalTransactionID
-        )
-    }
+//    func getSubscriptionStatuses(
+//        environment: Application.AppStore.Environment = .production,
+//        originalTransactionID: String
+//    ) async throws -> Application.AppStore.StatusResponse  {
+//        try await makeServerAPIRequest(
+//            endpoint: .subscriptionStatuses,
+//            environment: environment,
+//            originalTransactionID: originalTransactionID
+//        )
+//    }
     
     enum AppStoreError: AbortError {
         case unauthorized
