@@ -84,16 +84,3 @@ public extension Application.AppStore.StatusResponse.SubscriptionGroupIdentifier
         }
     }
 }
-
-extension KeyedDecodingContainer {
-    
-    func decode<Payload>(
-        _ type: Payload.Type = Payload.self,
-        using signers: JWTSigners = .init(),
-        forKey key: Key
-    ) throws -> Payload
-    where Payload: JWTPayload {
-        let token = try decode(String.self, forKey: key)
-        return try signers.unverified(token, as: Payload.self)
-    }
-}

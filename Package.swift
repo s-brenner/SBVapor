@@ -4,9 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "SBVapor",
-    platforms: [
-       .macOS(.v12)
-    ],
+    platforms: [.macOS(.v12)],
     products: [
         .library(name: "SBVapor", targets: ["SBVapor"]),
     ],
@@ -22,10 +20,10 @@ let package = Package(
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
             .product(name: "JWT", package: "jwt"),
             .product(name: "Vapor", package: "vapor"),
-//            .product(name: "XCTVapor", package: "vapor"),
         ]),
         .testTarget(name: "SBVaporTests", dependencies: [
             .target(name: "SBVapor"),
+            .product(name: "XCTVapor", package: "vapor"),
         ]),
     ]
 )
