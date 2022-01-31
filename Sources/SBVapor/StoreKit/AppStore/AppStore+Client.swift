@@ -1,6 +1,5 @@
 import JWT
 import Vapor
-import Foundation
 
 public extension Application.AppStore {
     

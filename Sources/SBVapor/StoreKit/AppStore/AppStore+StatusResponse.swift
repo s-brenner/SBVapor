@@ -1,5 +1,4 @@
 import JWT
-import StoreKit
 
 public extension Application.AppStore {
     
@@ -60,7 +59,7 @@ public extension Application.AppStore.StatusResponse.SubscriptionGroupIdentifier
         public let originalTransactionID: String
         
         /// The status of the subscription.
-        public let status: Product.SubscriptionInfo.RenewalState
+        public let status: RenewalState
         
         /// The subscription renewal information.
         public let renewalInfo: Application.AppStore.JWSRenewalInfoDecodedPayload
@@ -82,5 +81,33 @@ public extension Application.AppStore.StatusResponse.SubscriptionGroupIdentifier
             renewalInfo = try values.decode(forKey: .signedRenewalInfo)
             transaction = try values.decode(forKey: .signedTransactionInfo)
         }
+    }
+}
+
+public extension Application.AppStore.StatusResponse.SubscriptionGroupIdentifierItem.LastTransactionItem {
+    
+    /// The renewal states of auto-renewable subscriptions.
+    struct RenewalState: Equatable, Hashable, RawRepresentable {
+        
+        public let rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        /// The subscription is active.
+        public static let subscribed = RenewalState(rawValue: 1)
+        
+        /// The subscription is expired.
+        public static let expired = RenewalState(rawValue: 2)
+        
+        /// The subscription is in a billing retry period.
+        public static let inBillingRetryPeriod = RenewalState(rawValue: 3)
+        
+        /// The subscription is in a billing grace period.
+        public static let inGracePeriod = RenewalState(rawValue: 4)
+        
+        /// The subscription is revoked.
+        public static let revoked = RenewalState(rawValue: 5)
     }
 }

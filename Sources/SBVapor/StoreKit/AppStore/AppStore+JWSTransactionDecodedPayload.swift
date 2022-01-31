@@ -1,5 +1,4 @@
 import JWT
-import StoreKit
 
 public extension Application.AppStore {
     
@@ -16,7 +15,7 @@ public extension Application.AppStore {
         
         /// A value that indicates whether the transaction was purchased by the user,
         /// or is made available to them through Family Sharing.
-        public let ownershipType: Transaction.OwnershipType
+        public let ownershipType: OwnershipType
         
         /// The Boolean value that indicates whether the user upgraded to another subscription.
         public let isUpgraded: Bool
@@ -25,7 +24,7 @@ public extension Application.AppStore {
         public let offerID: String?
         
         /// The subscription offer type for the current subscription period.
-        public let offerType: Transaction.OfferType?
+        public let offerType: OfferType?
         
         /// The date of purchase for the original transaction.
         public let originalPurchaseDate: Date
@@ -47,7 +46,7 @@ public extension Application.AppStore {
         public let revocationDate: Date?
         
         /// The reason that App Store refunded the transaction or revoked it from family sharing.
-        public let revocationReason: Transaction.RevocationReason?
+        public let revocationReason: RevocationReason?
         
         /// The date that the App Store signed the JSON Web Signature (JWS) data.
         public let signedDate: Date
@@ -59,7 +58,7 @@ public extension Application.AppStore {
         public let id: String
         
         /// The type of the in-app purchase.
-        public let productType: Product.ProductType
+        public let productType: ProductType
         
         /// A unique ID that identifies subscription purchase events across devices, including subscription renewals.
         public let webOrderLineItemID: String?
@@ -114,5 +113,79 @@ public extension Application.AppStore {
         }
         
         public func verify(using signer: JWTSigner) throws { }
+    }
+}
+
+public extension Application.AppStore.JWSTransactionDecodedPayload {
+    
+    struct OfferType: Equatable, Hashable, RawRepresentable {
+        
+        public let rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        /// An introductory offer.
+        public static let introductory = OfferType(rawValue: 1)
+        
+        /// A promotional offer.
+        public static let promotional = OfferType(rawValue: 2)
+        
+        /// An offer with a subscription offer code.
+        public static let code = OfferType(rawValue: 3)
+    }
+    
+    struct OwnershipType: Equatable, Hashable, RawRepresentable {
+        
+        public let rawValue: String
+        
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        /// The transaction belongs to a family member who benefits from service.
+        public static let familyShared = OwnershipType(rawValue: "FAMILY_SHARED")
+        
+        /// The transaction belongs to the purchaser.
+        public static let purchased = OwnershipType(rawValue: "PURCHASED")
+    }
+    
+    /// Reasons why the App Store may refund a transaction or revoke it from family sharing.
+    struct RevocationReason: Equatable, Hashable, RawRepresentable {
+        
+        public let rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        /// Apple Support refunded the transaction on behalf of the customer due to an actual or perceived issue within your app.
+        public static let developerIssue = RevocationReason(rawValue: 1)
+        
+        /// Apple Support refunded the transaction on behalf of the customer for other reasons; for example, an accidental purchase.
+        public static let other = RevocationReason(rawValue: 0)
+    }
+    
+    /// The types of in-app purchases.
+    struct ProductType: Equatable, Hashable, RawRepresentable {
+        
+        public let rawValue: String
+        
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+        
+        /// An auto-renewable subscription.
+        public static let autoRenewable = ProductType(rawValue: "Auto-Renewable Subscription")
+        
+        /// A non-consumable in-app purchase.
+        public static let nonConsumable = ProductType(rawValue: "Non-Consumable")
+        
+        /// A consumable in-app purchase.
+        public static let consumable = ProductType(rawValue: "Consumable")
+        
+        /// A non-renewing subscription.
+        public static let nonRenewing = ProductType(rawValue: "Non-Renewing Subscription")
     }
 }

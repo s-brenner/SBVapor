@@ -1,5 +1,4 @@
 import JWT
-import StoreKit
 
 public extension Application.AppStore {
     
@@ -12,7 +11,7 @@ public extension Application.AppStore {
         public let willAutoRenew: Bool
         
         /// The reason the subscription expired.
-        public let expirationReason: Product.SubscriptionInfo.RenewalInfo.ExpirationReason
+        public let expirationReason: ExpirationReason?
         
         public let gracePeriodExpirationDate: Date?
         
@@ -22,13 +21,13 @@ public extension Application.AppStore {
         public let offerID: String?
         
         /// The subscription offer type for the next subscription period.
-        public let offerType: Transaction.OfferType?
+        public let offerType: Application.AppStore.JWSTransactionDecodedPayload.OfferType?
         
         /// The transaction identifier of the original purchase.
         public let originalTransactionID: String
         
         /// The status that indicates whether a customer has accepted a price increase to a subscription.
-        public let priceIncreaseStatus: Product.SubscriptionInfo.RenewalInfo.PriceIncreaseStatus
+        public let priceIncreaseStatus: PriceIncreaseStatus
         
         public let currentProductID: String
         
@@ -59,12 +58,7 @@ public extension Application.AppStore {
             offerID = try values.decodeIfPresent(String.self, forKey: .offerIdentifier)
             offerType = try values.decodeIfPresent(forKey: .offerType)
             originalTransactionID = try values.decode(String.self, forKey: .originalTransactionId)
-            if let _priceIncreaseStatus = try values.decodeIfPresent(Int.self, forKey: .priceIncreaseStatus) {
-                priceIncreaseStatus = _priceIncreaseStatus == 1 ? .agreed : .pending
-            }
-            else {
-                priceIncreaseStatus = .noIncreasePending
-            }
+            priceIncreaseStatus = try values.decodeIfPresent(forKey: .priceIncreaseStatus) ?? .noIncreasePending
             currentProductID = try values.decode(String.self, forKey: .productId)
             signedDate = try values.decodeMilliseconds(forKey: .signedDate)
         }
@@ -74,5 +68,40 @@ public extension Application.AppStore {
         }
         
         public func verify(using signer: JWTSigner) throws { }
+    }
+}
+
+public extension Application.AppStore.JWSRenewalInfoDecodedPayload {
+    
+    /// The reasons for subscription expirations.
+    struct ExpirationReason: Equatable, Hashable, RawRepresentable {
+        
+        public let rawValue: Int
+        
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+        
+        /// The customer canceled their subscription.
+        public static let autoRenewDisabled = ExpirationReason(rawValue: 1)
+        
+        /// Billing error; for example, the customer’s payment information was no longer valid.
+        public static let billingError = ExpirationReason(rawValue: 2)
+        
+        /// The customer didn’t consent to a recent price increase.
+        public static let didNotConsentToPriceIncrease = ExpirationReason(rawValue: 3)
+        
+        /// The product wasn’t available for purchase at the time of renewal.
+        public static let productUnavailable = ExpirationReason(rawValue: 4)
+    }
+    
+    /// Status values for a customer’s price increase consent.
+    @frozen enum PriceIncreaseStatus: Int {
+        /// The customer hasn’t yet responded to the subscription price increase.
+        case pending = 0
+        /// The customer consented to the subscription price increase.
+        case agreed = 1
+        /// There’s no pending price increase.
+        case noIncreasePending = 2
     }
 }

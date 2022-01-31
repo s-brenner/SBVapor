@@ -1,5 +1,4 @@
 import JWT
-import StoreKit
 
 public extension Application.AppStore {
     
