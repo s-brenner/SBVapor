@@ -22,7 +22,7 @@ let package = Package(
             .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
             .product(name: "JWT", package: "jwt"),
             .product(name: "Vapor", package: "vapor"),
-            .product(name: "XCTVapor", package: "vapor"),
+//            .product(name: "XCTVapor", package: "vapor"),
         ]),
         .testTarget(name: "SBVaporTests", dependencies: [
             .target(name: "SBVapor"),
