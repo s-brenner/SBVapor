@@ -19,6 +19,12 @@ public extension Application.AppStore {
 
 public extension Application.AppStore.Client {
     
+    func processServerNotification(on req: Request) throws -> Application.AppStore.ResponseBodyV2.DecodedPayload {
+        let body = try req.content.decode(Application.AppStore.ResponseBodyV2.self)
+        let signers = JWTSigners()
+        return try signers.unverified(body.signedPayload, as: Application.AppStore.ResponseBodyV2.DecodedPayload.self)
+    }
+    
     func getTransactionHistory(
         environment: Application.AppStore.Environment = .production,
         originalTransactionID: String,
@@ -149,7 +155,7 @@ fileprivate extension Application.AppStore.Client {
             ) {
                 self.issuer = .init(value: issuer)
                 self.issuedAt = .init(value: issuedAt)
-                expiration = .init(value: issuedAt.addingTimeInterval(600))
+                expiration = .init(value: issuedAt.addingTimeInterval(90))
                 audience = "appstoreconnect-v1"
                 nonce = UUID().uuidString
                 self.bundleID = bundleID
@@ -172,9 +178,10 @@ fileprivate extension Application.AppStore.Client {
 
 fileprivate extension URL {
     
-    static func appStoreServer(endpoint: Application.AppStore.Client.Endpoint,
-                               environment: Application.AppStore.Environment,
-                               originalTransactionID: String
+    static func appStoreServer(
+        endpoint: Application.AppStore.Client.Endpoint,
+        environment: Application.AppStore.Environment,
+        originalTransactionID: String
     ) -> URL {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"

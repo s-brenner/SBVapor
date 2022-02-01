@@ -3,6 +3,18 @@ import JWT
 
 extension KeyedDecodingContainer {
     
+    func decodeUUID(forKey key: Key) throws -> UUID {
+        let uuidString = try decode(String.self, forKey: key)
+        guard let uuid = UUID(uuidString: uuidString) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: key,
+                in: self,
+                debugDescription: "\(uuidString) is not a valid UUID"
+            )
+       }
+        return uuid
+    }
+    
     func decodeMilliseconds(forKey key: Key) throws -> Date {
         let milliseconds = try decode(Int.self, forKey: key)
         return Date(millisecondsSince1970: milliseconds)

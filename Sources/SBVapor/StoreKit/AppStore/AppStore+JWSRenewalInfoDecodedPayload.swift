@@ -83,16 +83,16 @@ public extension Application.AppStore.JWSRenewalInfoDecodedPayload {
         }
         
         /// The customer canceled their subscription.
-        public static let autoRenewDisabled = ExpirationReason(rawValue: 1)
+        public static let autoRenewDisabled = Self(rawValue: 1)
         
         /// Billing error; for example, the customer’s payment information was no longer valid.
-        public static let billingError = ExpirationReason(rawValue: 2)
+        public static let billingError = Self(rawValue: 2)
         
         /// The customer didn’t consent to a recent price increase.
-        public static let didNotConsentToPriceIncrease = ExpirationReason(rawValue: 3)
+        public static let didNotConsentToPriceIncrease = Self(rawValue: 3)
         
         /// The product wasn’t available for purchase at the time of renewal.
-        public static let productUnavailable = ExpirationReason(rawValue: 4)
+        public static let productUnavailable = Self(rawValue: 4)
     }
     
     /// Status values for a customer’s price increase consent.

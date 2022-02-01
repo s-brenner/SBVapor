@@ -96,18 +96,18 @@ public extension Application.AppStore.StatusResponse.SubscriptionGroupIdentifier
         }
         
         /// The subscription is active.
-        public static let subscribed = RenewalState(rawValue: 1)
+        public static let subscribed = Self(rawValue: 1)
         
         /// The subscription is expired.
-        public static let expired = RenewalState(rawValue: 2)
+        public static let expired = Self(rawValue: 2)
         
         /// The subscription is in a billing retry period.
-        public static let inBillingRetryPeriod = RenewalState(rawValue: 3)
+        public static let inBillingRetryPeriod = Self(rawValue: 3)
         
         /// The subscription is in a billing grace period.
-        public static let inGracePeriod = RenewalState(rawValue: 4)
+        public static let inGracePeriod = Self(rawValue: 4)
         
         /// The subscription is revoked.
-        public static let revoked = RenewalState(rawValue: 5)
+        public static let revoked = Self(rawValue: 5)
     }
 }

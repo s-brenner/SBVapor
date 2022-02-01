@@ -2,7 +2,7 @@ import Foundation
 
 public extension Application.AppStore {
     
-    enum Environment: String {
+    @frozen enum Environment: String {
         case production = "Production"
         case sandbox = "Sandbox"
         

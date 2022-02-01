@@ -127,13 +127,13 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         }
         
         /// An introductory offer.
-        public static let introductory = OfferType(rawValue: 1)
+        public static let introductory = Self(rawValue: 1)
         
         /// A promotional offer.
-        public static let promotional = OfferType(rawValue: 2)
+        public static let promotional = Self(rawValue: 2)
         
         /// An offer with a subscription offer code.
-        public static let code = OfferType(rawValue: 3)
+        public static let code = Self(rawValue: 3)
     }
     
     struct OwnershipType: Equatable, Hashable, RawRepresentable {
@@ -145,10 +145,10 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         }
         
         /// The transaction belongs to a family member who benefits from service.
-        public static let familyShared = OwnershipType(rawValue: "FAMILY_SHARED")
+        public static let familyShared = Self(rawValue: "FAMILY_SHARED")
         
         /// The transaction belongs to the purchaser.
-        public static let purchased = OwnershipType(rawValue: "PURCHASED")
+        public static let purchased = Self(rawValue: "PURCHASED")
     }
     
     /// Reasons why the App Store may refund a transaction or revoke it from family sharing.
@@ -161,10 +161,10 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         }
         
         /// Apple Support refunded the transaction on behalf of the customer due to an actual or perceived issue within your app.
-        public static let developerIssue = RevocationReason(rawValue: 1)
+        public static let developerIssue = Self(rawValue: 1)
         
         /// Apple Support refunded the transaction on behalf of the customer for other reasons; for example, an accidental purchase.
-        public static let other = RevocationReason(rawValue: 0)
+        public static let other = Self(rawValue: 0)
     }
     
     /// The types of in-app purchases.
@@ -177,15 +177,15 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         }
         
         /// An auto-renewable subscription.
-        public static let autoRenewable = ProductType(rawValue: "Auto-Renewable Subscription")
+        public static let autoRenewable = Self(rawValue: "Auto-Renewable Subscription")
         
         /// A non-consumable in-app purchase.
-        public static let nonConsumable = ProductType(rawValue: "Non-Consumable")
+        public static let nonConsumable = Self(rawValue: "Non-Consumable")
         
         /// A consumable in-app purchase.
-        public static let consumable = ProductType(rawValue: "Consumable")
+        public static let consumable = Self(rawValue: "Consumable")
         
         /// A non-renewing subscription.
-        public static let nonRenewing = ProductType(rawValue: "Non-Renewing Subscription")
+        public static let nonRenewing = Self(rawValue: "Non-Renewing Subscription")
     }
 }
