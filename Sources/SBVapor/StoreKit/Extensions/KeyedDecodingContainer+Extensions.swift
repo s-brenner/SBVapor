@@ -60,4 +60,14 @@ extension KeyedDecodingContainer {
         let token = try decode(String.self, forKey: key)
         return try signers.unverified(token, as: Payload.self)
     }
+    
+    func decodeIfPresent<Payload>(
+        _ type: Payload.Type = Payload.self,
+        using signers: JWTSigners = .init(),
+        forKey key: Key
+    ) throws -> Payload?
+    where Payload: JWTPayload {
+        guard let token = try decodeIfPresent(String.self, forKey: key) else { return nil }
+        return try signers.unverified(token, as: Payload.self)
+    }
 }

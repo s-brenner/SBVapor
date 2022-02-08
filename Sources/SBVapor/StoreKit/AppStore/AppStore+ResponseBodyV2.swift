@@ -29,7 +29,7 @@ public extension Application.AppStore.ResponseBodyV2 {
         public let notificationUUID: UUID
         
         /// The version number of the notification.
-        public let notificationVersion: String
+        public let notificationVersion: String?
         
         /// The object that contains the app metadata and signed renewal and transaction information.
         public let data: PayloadData
@@ -47,7 +47,7 @@ public extension Application.AppStore.ResponseBodyV2 {
             notificationType = try values.decode(forKey: .notificationType)
             subtype = try values.decode(forKey: .subtype)
             notificationUUID = try values.decodeUUID(forKey: .notificationUUID)
-            notificationVersion = try values.decode(String.self, forKey: .notificationVersion)
+            notificationVersion = try values.decodeIfPresent(String.self, forKey: .notificationVersion)
             data = try values.decode(PayloadData.self, forKey: .data)
         }
         
@@ -102,7 +102,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
     struct PayloadData: Decodable {
         
         /// The unique identifier of the app that the notification applies to.
-        public let appAppleID: String
+        public let appAppleID: String?
         
         /// The bundle identifier of the app.
         public let bundleID: String
@@ -114,7 +114,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
         public let environment: Application.AppStore.Environment
         
         /// Subscription renewal information.
-        public let renewalInfo: Application.AppStore.JWSRenewalInfoDecodedPayload
+        public let renewalInfo: Application.AppStore.JWSRenewalInfoDecodedPayload?
         
         /// Transaction information.
         public let transactionInfo: Application.AppStore.JWSTransactionDecodedPayload
@@ -130,11 +130,11 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
         
         public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
-            appAppleID = try values.decode(String.self, forKey: .appAppleId)
+            appAppleID = try values.decodeIfPresent(String.self, forKey: .appAppleId)
             bundleID = try values.decode(String.self, forKey: .bundleId)
             bundleVersion = try values.decode(String.self, forKey: .bundleVersion)
             environment = try values.decode(forKey: .environment)
-            renewalInfo = try values.decode(forKey: .signedRenewalInfo)
+            renewalInfo = try values.decodeIfPresent(forKey: .signedRenewalInfo)
             transactionInfo = try values.decode(forKey: .signedTransactionInfo)
         }
     }
