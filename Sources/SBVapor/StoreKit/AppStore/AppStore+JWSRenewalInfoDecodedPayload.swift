@@ -50,8 +50,8 @@ public extension Application.AppStore {
         public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             autoRenewPreference = try values.decode(String.self, forKey: .autoRenewProductId)
-            willAutoRenew = try values.decode(Int.self, forKey: .autoRenewStatus) == 1
-            expirationReason = try values.decode(forKey: .expirationIntent)
+            willAutoRenew = try values.decodeIfPresent(Int.self, forKey: .autoRenewStatus) == 1
+            expirationReason = try values.decodeIfPresent(forKey: .expirationIntent)
             #warning("Grace period decoding is untested")
             gracePeriodExpirationDate = try values.decodeIfPresent(Date.self, forKey: .gracePeriodExpiresDate)
             isInBillingRetry = try values.decode(Bool.self, forKey: .isInBillingRetryPeriod)

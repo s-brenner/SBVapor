@@ -19,10 +19,14 @@ public extension Application.AppStore {
 
 public extension Application.AppStore.Client {
     
+    #warning("Debug only")
+    func decodeServerNotificationSignedPayload(on req: Request) throws -> String {
+        let body = try req.content.decode(Application.AppStore.ResponseBodyV2.self)
+        return body.signedPayload
+    }
+    
     func decodeServerNotification(on req: Request) throws -> Application.AppStore.ResponseBodyV2.DecodedPayload {
         let body = try req.content.decode(Application.AppStore.ResponseBodyV2.self)
-        req.application.logger.warning("Application Logger: \(body.signedPayload)")
-        req.logger.warning("Request Logger: \(body.signedPayload)")
         let signers = JWTSigners()
         return try signers.unverified(body.signedPayload, as: Application.AppStore.ResponseBodyV2.DecodedPayload.self)
     }

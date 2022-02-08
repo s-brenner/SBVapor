@@ -117,7 +117,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
         public let renewalInfo: Application.AppStore.JWSRenewalInfoDecodedPayload?
         
         /// Transaction information.
-        public let transactionInfo: Application.AppStore.JWSTransactionDecodedPayload
+        public let transactionInfo: Application.AppStore.JWSTransactionDecodedPayload?
         
         private enum CodingKeys: String, CodingKey {
             case appAppleId
@@ -135,7 +135,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
             bundleVersion = try values.decode(String.self, forKey: .bundleVersion)
             environment = try values.decode(forKey: .environment)
             renewalInfo = try values.decodeIfPresent(forKey: .signedRenewalInfo)
-            transactionInfo = try values.decode(forKey: .signedTransactionInfo)
+            transactionInfo = try values.decodeIfPresent(forKey: .signedTransactionInfo)
         }
     }
 }
