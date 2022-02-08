@@ -22,14 +22,14 @@ public extension Application.AppStore.ResponseBodyV2 {
         
         /// Additional information that identifies the notification event, or an empty string.
         /// The subtype applies only to select version 2 notifications.
-        public let subtype: NotificationType.Subtype
+        public let subtype: NotificationType.Subtype?
         
         /// A unique identifier for the notification.
         /// Use this value to identify a duplicate notification.
         public let notificationUUID: UUID
         
         /// The version number of the notification.
-        public let notificationVersion: String?
+        public let notificationVersion: String
         
         /// The object that contains the app metadata and signed renewal and transaction information.
         public let data: PayloadData
@@ -38,16 +38,16 @@ public extension Application.AppStore.ResponseBodyV2 {
             case notificationType
             case subtype
             case notificationUUID
-            case notificationVersion
+            case version
             case data
         }
         
         public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             notificationType = try values.decode(forKey: .notificationType)
-            subtype = try values.decode(forKey: .subtype)
+            subtype = try values.decodeIfPresent(forKey: .subtype)
             notificationUUID = try values.decodeUUID(forKey: .notificationUUID)
-            notificationVersion = try values.decodeIfPresent(String.self, forKey: .notificationVersion)
+            notificationVersion = try values.decode(String.self, forKey: .version)
             data = try values.decode(PayloadData.self, forKey: .data)
         }
         
@@ -117,7 +117,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
         public let renewalInfo: Application.AppStore.JWSRenewalInfoDecodedPayload?
         
         /// Transaction information.
-        public let transactionInfo: Application.AppStore.JWSTransactionDecodedPayload?
+        public let transactionInfo: Application.AppStore.JWSTransactionDecodedPayload
         
         private enum CodingKeys: String, CodingKey {
             case appAppleId
@@ -135,7 +135,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
             bundleVersion = try values.decode(String.self, forKey: .bundleVersion)
             environment = try values.decode(forKey: .environment)
             renewalInfo = try values.decodeIfPresent(forKey: .signedRenewalInfo)
-            transactionInfo = try values.decodeIfPresent(forKey: .signedTransactionInfo)
+            transactionInfo = try values.decode(forKey: .signedTransactionInfo)
         }
     }
 }

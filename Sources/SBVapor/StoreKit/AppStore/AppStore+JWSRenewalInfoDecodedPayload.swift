@@ -54,7 +54,7 @@ public extension Application.AppStore {
             expirationReason = try values.decodeIfPresent(forKey: .expirationIntent)
             #warning("Grace period decoding is untested")
             gracePeriodExpirationDate = try values.decodeIfPresent(Date.self, forKey: .gracePeriodExpiresDate)
-            isInBillingRetry = try values.decode(Bool.self, forKey: .isInBillingRetryPeriod)
+            isInBillingRetry = try values.decodeIfPresent(Bool.self, forKey: .isInBillingRetryPeriod) ?? false
             offerID = try values.decodeIfPresent(String.self, forKey: .offerIdentifier)
             offerType = try values.decodeIfPresent(forKey: .offerType)
             originalTransactionID = try values.decode(String.self, forKey: .originalTransactionId)
