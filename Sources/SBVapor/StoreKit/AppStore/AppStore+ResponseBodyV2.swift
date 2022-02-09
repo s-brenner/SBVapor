@@ -61,7 +61,7 @@ public extension Application.AppStore.ResponseBodyV2 {
 
 public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
     
-    struct NotificationType: Equatable, Hashable, RawRepresentable {
+    struct NotificationType: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: String
         
@@ -96,13 +96,17 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
         public static let revoke = Self(rawValue: "REVOKE")
         
         public static let subscribed = Self(rawValue: "SUBSCRIBED")
+        
+        public var description: String { rawValue }
+        
+        public var debugDescription: String { rawValue }
     }
     
     /// The app metadata and signed renewal and transaction information.
     struct PayloadData: Decodable {
         
         /// The unique identifier of the app that the notification applies to.
-        public let appAppleID: String?
+        public let appAppleID: Int?
         
         /// The bundle identifier of the app.
         public let bundleID: String
@@ -130,7 +134,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
         
         public init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
-            appAppleID = try values.decodeIfPresent(String.self, forKey: .appAppleId)
+            appAppleID = try values.decodeIfPresent(Int.self, forKey: .appAppleId)
             bundleID = try values.decode(String.self, forKey: .bundleId)
             bundleVersion = try values.decode(String.self, forKey: .bundleVersion)
             environment = try values.decode(forKey: .environment)
@@ -142,7 +146,7 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload {
 
 public extension Application.AppStore.ResponseBodyV2.DecodedPayload.NotificationType {
     
-    struct Subtype: Equatable, Hashable, RawRepresentable {
+    struct Subtype: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: String
         
@@ -210,5 +214,9 @@ public extension Application.AppStore.ResponseBodyV2.DecodedPayload.Notification
         /// Applies to the PRICE_INCREASE notificationType.
         /// A notification with this subtype indicates that the user accepted the subscription price increase.
         public static let accepted = Self(rawValue: "ACCEPTED")
+        
+        public var description: String { rawValue }
+        
+        public var debugDescription: String { rawValue }
     }
 }

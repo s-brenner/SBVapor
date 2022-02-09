@@ -40,6 +40,14 @@ final class AppStoreTests: XCTestCase {
             let decodedPayloads = try signedPayloads.map {
                 try JWTSigners().unverified($0, as: Application.AppStore.ResponseBodyV2.DecodedPayload.self)
             }
+            decodedPayloads.forEach {
+                print("\($0.notificationType.rawValue), \($0.subtype?.rawValue ?? "")")
+            }
+            
+//            print(decodedPayloads.first { $0.data.appAppleID != nil })
+            
+            print(decodedPayloads.first { $0.subtype == .billingRecovery }!)
+            
             print("Decoded \(decodedPayloads.count) server notifications")
         }
         catch {

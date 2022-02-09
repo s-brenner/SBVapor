@@ -74,7 +74,7 @@ public extension Application.AppStore {
 public extension Application.AppStore.JWSRenewalInfoDecodedPayload {
     
     /// The reasons for subscription expirations.
-    struct ExpirationReason: Equatable, Hashable, RawRepresentable {
+    struct ExpirationReason: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: Int
         
@@ -93,15 +93,37 @@ public extension Application.AppStore.JWSRenewalInfoDecodedPayload {
         
         /// The product wasn’t available for purchase at the time of renewal.
         public static let productUnavailable = Self(rawValue: 4)
+        
+        public var description: String {
+            switch self {
+            case .autoRenewDisabled: return "Auto-Renew Disabled"
+            case .billingError: return "Billing Error"
+            case .didNotConsentToPriceIncrease: return "Did Not Consent To Price Increase"
+            case .productUnavailable: return "Product Unavailable"
+            default: return "Unknown"
+            }
+        }
+        
+        public var debugDescription: String { "(\(rawValue)) \(description)" }
     }
     
     /// Status values for a customer’s price increase consent.
-    @frozen enum PriceIncreaseStatus: Int {
+    @frozen enum PriceIncreaseStatus: Int, CustomStringConvertible, CustomDebugStringConvertible {
         /// The customer hasn’t yet responded to the subscription price increase.
         case pending = 0
         /// The customer consented to the subscription price increase.
         case agreed = 1
         /// There’s no pending price increase.
         case noIncreasePending = 2
+        
+        public var description: String {
+            switch self {
+            case .pending: return "Pending"
+            case .agreed: return "Agreed"
+            case .noIncreasePending: return "No Increase Pending"
+            }
+        }
+        
+        public var debugDescription: String { "(\(rawValue)) \(description)" }
     }
 }

@@ -118,7 +118,7 @@ public extension Application.AppStore {
 
 public extension Application.AppStore.JWSTransactionDecodedPayload {
     
-    struct OfferType: Equatable, Hashable, RawRepresentable {
+    struct OfferType: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: Int
         
@@ -134,9 +134,20 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         
         /// An offer with a subscription offer code.
         public static let code = Self(rawValue: 3)
+        
+        public var description: String {
+            switch self {
+            case .introductory: return "Introductory"
+            case .promotional: return "Promotional"
+            case .code: return "Code"
+            default: return "Unknown"
+            }
+        }
+        
+        public var debugDescription: String { "(\(rawValue)) \(description)" }
     }
     
-    struct OwnershipType: Equatable, Hashable, RawRepresentable {
+    struct OwnershipType: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: String
         
@@ -149,10 +160,20 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         
         /// The transaction belongs to the purchaser.
         public static let purchased = Self(rawValue: "PURCHASED")
+        
+        public var description: String {
+            switch self {
+            case .familyShared: return "Family Shared"
+            case .purchased: return "Purchased"
+            default: return "Unknown"
+            }
+        }
+        
+        public var debugDescription: String { rawValue }
     }
     
     /// Reasons why the App Store may refund a transaction or revoke it from family sharing.
-    struct RevocationReason: Equatable, Hashable, RawRepresentable {
+    struct RevocationReason: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: Int
         
@@ -165,10 +186,20 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         
         /// Apple Support refunded the transaction on behalf of the customer for other reasons; for example, an accidental purchase.
         public static let other = Self(rawValue: 0)
+        
+        public var description: String {
+            switch self {
+            case .developerIssue: return "Developer Issue"
+            case .other: return "Other"
+            default: return "Unknown"
+            }
+        }
+        
+        public var debugDescription: String { "(\(rawValue)) \(description)" }
     }
     
     /// The types of in-app purchases.
-    struct ProductType: Equatable, Hashable, RawRepresentable {
+    struct ProductType: Equatable, Hashable, RawRepresentable, CustomStringConvertible, CustomDebugStringConvertible {
         
         public let rawValue: String
         
@@ -187,5 +218,9 @@ public extension Application.AppStore.JWSTransactionDecodedPayload {
         
         /// A non-renewing subscription.
         public static let nonRenewing = Self(rawValue: "Non-Renewing Subscription")
+        
+        public var description: String { rawValue }
+        
+        public var debugDescription: String { rawValue }
     }
 }
