@@ -6,18 +6,10 @@ extension Application {
     public struct AppStore {
         
         public func initialize() throws {
-            let issuerId = Vapor.Environment
-                .result("APPSTORE_ISSUERID") { Error.noEnvironmentValue($0) }
-                .fatalError(\.errorDescription!)
-            let bundleId = Vapor.Environment
-                .result("APPSTORE_BUNDLEID") { Error.noEnvironmentValue($0) }
-                .fatalError(\.errorDescription!)
-            let privateKeyId = Vapor.Environment
-                .result("APPSTORE_SERVER_PRIVATEKEYID") { Error.noEnvironmentValue($0) }
-                .fatalError(\.errorDescription!)
-            let pem = Vapor.Environment
-                .result("APPSTORE_SERVER_PRIVATEKEY") { Error.noEnvironmentValue($0) }
-                .fatalError(\.errorDescription!)
+            let issuerId = try Vapor.Environment.value(forKey: "APPSTORE_ISSUERID")
+            let bundleId = try Vapor.Environment.value(forKey: "APPSTORE_BUNDLEID")
+            let privateKeyId = try Vapor.Environment.value(forKey: "APPSTORE_SERVER_PRIVATEKEYID")
+            let pem = try Vapor.Environment.value(forKey: "APPSTORE_SERVER_PRIVATEKEY")
             do {
                 let privateKey = try ECDSAKey.private(pem: pem)
                 application.storage[Key.self] = Storage(
@@ -29,7 +21,7 @@ extension Application {
                 application.logger.notice("AppStore initialized")
             }
             catch {
-                guard let error = error as? JWTError else { return }
+                guard let error = error as? JWTError else { throw error }
                 throw Error.privateKeyInvalid(error)
             }
         }
@@ -76,16 +68,19 @@ private extension Application.AppStore {
     
     var storage: Storage {
         if application.storage[Key.self] == nil {
-            try! initialize()
+            do { try initialize() }
+            catch { fatalError(error.localizedDescription) }
         }
         return application.storage[Key.self]!
     }
 }
 
+
+// MARK: - Error
+
 public extension Application.AppStore {
     
     enum Error: LocalizedError {
-        case noEnvironmentValue(_ key: String)
         case privateKeyInvalid(_ error: JWTError)
         
         public var errorDescription: String? {
@@ -101,8 +96,6 @@ public extension Application.AppStore {
         
         public var failureReason: String? {
             switch self {
-            case .noEnvironmentValue(let key):
-                return "The environment key \(key) is not defined"
             case .privateKeyInvalid(let error):
                 return error.reason
             }

@@ -15,7 +15,7 @@ extension Application.AppStore {
 public extension Application.AppStore.ResponseBodyV2 {
     
     /// A decoded payload containing the version 2 notification data.
-    struct DecodedPayload: JWTPayload {
+    struct DecodedPayload: JWTPayload, CustomStringConvertible {
         
         /// The in-app purchase event for which the App Store sent this version 2 notification.
         public let notificationType: NotificationType
@@ -56,6 +56,12 @@ public extension Application.AppStore.ResponseBodyV2 {
         }
         
         public func verify(using signer: JWTSigner) throws { }
+        
+        public var description: String {
+            [notificationUUID.uuidString, notificationType.rawValue, subtype?.rawValue]
+                .compactMap { $0 }
+                .joined(separator: ", ")
+        }
     }
 }
 
