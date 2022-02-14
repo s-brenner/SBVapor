@@ -16,6 +16,12 @@ public extension Application.SignInWithApple {
         
         public let identityToken: String
         
+        public init(userIdentifier: String, authorizationCode: String, identityToken: String) {
+            self.userIdentifier = userIdentifier
+            self.authorizationCode = authorizationCode
+            self.identityToken = identityToken
+        }
+        
         public static func validations(_ validations: inout Validations) {
             validations.add(CodingKeys.userIdentifier, as: String.self, is: !.empty)
             validations.add(CodingKeys.authorizationCode, as: String.self, is: !.empty)
