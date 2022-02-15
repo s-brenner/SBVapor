@@ -24,7 +24,7 @@ public enum Encryption {
             }
         }
         
-        public var status: HTTPResponseStatus { .badRequest }
+        public var status: HTTPResponseStatus { .internalServerError }
     }
     
     struct Encrypted {

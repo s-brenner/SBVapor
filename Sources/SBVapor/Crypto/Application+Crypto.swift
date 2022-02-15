@@ -6,55 +6,58 @@ extension Application {
         
         typealias KeyAgreement = P256.KeyAgreement
         
-        public enum Error: LocalizedError {
-            case noEnvironmentValue(_ key: String)
-            case notBase64Encoded(_ key: String, _ value: String)
-            case privateKeyError(_ underlyingError: Swift.Error)
-            
-            public var errorDescription: String? {
-                var string = "CryptoError"
-                if let reason = failureReason {
-                    string += "\n\t\(reason)"
-                }
-                if let recovery = recoverySuggestion {
-                    string += "\n\t\(recovery)"
-                }
-                return string
-            }
-            
-            public var failureReason: String? {
-                switch self {
-                case .noEnvironmentValue(let key):
-                    return "The environment key \(key) is not defined"
-                case .notBase64Encoded(let key, let value):
-                    return "The value for \(key) (\(value)) is not Base-64 encoded"
-                case .privateKeyError(let error):
-                    return error.localizedDescription
-                }
-            }
-            
-            public var recoverySuggestion: String? {
-                "Try \(SymmetricKey.base64Encoded())"
-            }
-        }
+//        public enum Error: LocalizedError {
+////            case noEnvironmentValue(_ key: String)
+//            case notBase64Encoded(_ key: String, _ value: String)
+//            case privateKeyError(_ underlyingError: Swift.Error)
+//
+//            public var errorDescription: String? {
+//                var string = "CryptoError"
+//                if let reason = failureReason {
+//                    string += "\n\t\(reason)"
+//                }
+//                if let recovery = recoverySuggestion {
+//                    string += "\n\t\(recovery)"
+//                }
+//                return string
+//            }
+//
+//            public var failureReason: String? {
+//                switch self {
+////                case .noEnvironmentValue(let key):
+////                    return "The environment key \(key) is not defined"
+//                case .notBase64Encoded(let key, let value):
+//                    return "The value for \(key) (\(value)) is not Base-64 encoded"
+//                case .privateKeyError(let error):
+//                    return error.localizedDescription
+//                }
+//            }
+//
+//            public var recoverySuggestion: String? {
+//                "Try \(SymmetricKey.base64Encoded())"
+//            }
+//        }
         
         public func initialize() {
-            let symmetricKeyClient = Environment
-                .symmetricKey("SYMMETRIC_KEY_CLIENT")
-                .fatalError { $0.errorDescription! }
-            let symmetricKeyDatabase = Environment
-                .symmetricKey("SYMMETRIC_KEY_DATABASE")
-                .fatalError { $0.errorDescription! }
-            let privateKey = Environment
-                .privateKey("PRIVATE_KEY")
-                .fatalError { $0.errorDescription! }
-            application.storage[Key.self] =
-                .init(
+            do {
+                let symmetricKeyClient = try Environment.symmetricKey(forKey: "CRYPTO_SYMMETRIC_KEY_CLIENT")
+                let symmetricKeyDatabase = try Environment.symmetricKey(forKey: "CRYPTO_SYMMETRIC_KEY_DATABASE")
+                let privateKey = try Environment.privateKey(forKey: "CRYPTO_PRIVATE_KEY")
+                application.storage[Key.self] = Storage(
                     symmetricKeyClient: symmetricKeyClient,
                     symmetricKeyDatabase: symmetricKeyDatabase,
                     privateKey: privateKey
                 )
-            application.logger.notice("Crypto initialized")
+                application.logger.notice("Crypto initialized")
+            }
+            catch {
+                if let environmentError = error as? Environment.Error {
+                    switch environmentError {
+                    case .noEnvironmentValue(let key), .notBase64Encoded(let key, _):
+                        fatalError("The value for \(key) is either missing or not properly encoded. Try \(SymmetricKey.base64Encoded())")
+                    }
+                }
+            }
         }
         
         fileprivate let application: Application
