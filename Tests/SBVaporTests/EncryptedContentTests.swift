@@ -3,14 +3,6 @@ import XCTest
 
 final class EncryptedContentTests: XCTestCase {
     
-    func testPoop() {
-        
-        let base64 = SymmetricKey.base64Encoded()
-        let data = Data(base64Encoded: base64)!
-        let key = SymmetricKey(data: data)
-    }
-    
-    
     func testEncryptionAndDecryption() {
         let mockID = "mock"
         let content = TestContent(date: .init())

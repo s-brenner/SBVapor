@@ -6,39 +6,7 @@ extension Application {
         
         typealias KeyAgreement = P256.KeyAgreement
         
-//        public enum Error: LocalizedError {
-////            case noEnvironmentValue(_ key: String)
-//            case notBase64Encoded(_ key: String, _ value: String)
-//            case privateKeyError(_ underlyingError: Swift.Error)
-//
-//            public var errorDescription: String? {
-//                var string = "CryptoError"
-//                if let reason = failureReason {
-//                    string += "\n\t\(reason)"
-//                }
-//                if let recovery = recoverySuggestion {
-//                    string += "\n\t\(recovery)"
-//                }
-//                return string
-//            }
-//
-//            public var failureReason: String? {
-//                switch self {
-////                case .noEnvironmentValue(let key):
-////                    return "The environment key \(key) is not defined"
-//                case .notBase64Encoded(let key, let value):
-//                    return "The value for \(key) (\(value)) is not Base-64 encoded"
-//                case .privateKeyError(let error):
-//                    return error.localizedDescription
-//                }
-//            }
-//
-//            public var recoverySuggestion: String? {
-//                "Try \(SymmetricKey.base64Encoded())"
-//            }
-//        }
-        
-        public func initialize() {
+        public func initialize() throws {
             do {
                 let symmetricKeyClient = try Environment.symmetricKey(forKey: "CRYPTO_SYMMETRIC_KEY_CLIENT")
                 let symmetricKeyDatabase = try Environment.symmetricKey(forKey: "CRYPTO_SYMMETRIC_KEY_DATABASE")
@@ -56,6 +24,9 @@ extension Application {
                     case .noEnvironmentValue(let key), .notBase64Encoded(let key, _):
                         fatalError("The value for \(key) is either missing or not properly encoded. Try \(SymmetricKey.base64Encoded())")
                     }
+                }
+                else {
+                    throw error
                 }
             }
         }
@@ -101,7 +72,7 @@ extension Application {
         public func encrypt<Item>(_ item: Item, strategy: EncryptionStrategy) throws -> String
         where Item: Encodable {
             let data = try JSONEncoder().encode(item)
-            return try Encryption.encrypt(data, with: symmetricKey(strategy)).get().base64EncodedString
+            return try Encryption.encrypt(data, with: symmetricKey(strategy)).base64EncodedString
         }
         
         public func decrypt<Item>(
@@ -110,7 +81,7 @@ extension Application {
             strategy: EncryptionStrategy
         ) throws -> Item
         where Item: Decodable {
-            let data = try Encryption.decrypt(base64Encoded, with: symmetricKey(strategy)).get()
+            let data = try Encryption.decrypt(base64Encoded, with: symmetricKey(strategy))
             return try JSONDecoder().decode(item, from: data)
         }
     }
@@ -145,7 +116,8 @@ private extension Application.Crypto {
     
     var storage: Storage {
         if application.storage[Key.self] == nil {
-            initialize()
+            do { try initialize() }
+            catch { fatalError(error.localizedDescription) }
         }
         return application.storage[Key.self]!
     }

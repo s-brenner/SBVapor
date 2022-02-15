@@ -28,7 +28,7 @@ public enum Encryption {
     }
     
     struct Encrypted {
-
+        
         public let data: Data
         
         public var base64EncodedString: String {
@@ -40,58 +40,50 @@ public enum Encryption {
         }
     }
     
-    static func encrypt(_ data: Data, with key: SymmetricKey) -> Result<Encrypted, Error> {
-        Result { try ChaChaPoly.seal(data, using: key).combined }
-            .map { .init(data: $0) }
-            .mapError { .sealFailure($0) }
+    static func encrypt(_ data: Data, with key: SymmetricKey) throws -> Encrypted {
+        do {
+            return Encrypted(data: try ChaChaPoly.seal(data, using: key).combined)
+        }
+        catch {
+            throw Error.sealFailure(error)
+        }
     }
     
-    static func encrypt(
-        _ string: String,
-        with key: SymmetricKey,
-        encoding: String.Encoding = .utf8
-    ) -> Result<Encrypted, Error> {
+    static func encrypt(_ string: String, with key: SymmetricKey, encoding: String.Encoding = .utf8) throws -> Encrypted {
         guard let data = string.data(using: encoding) else {
-            return .failure(.encodingError(string, encoding))
+            throw Error.encodingError(string, encoding)
         }
-        return encrypt(data, with: key)
+        return try encrypt(data, with: key)
     }
     
-    static func decrypt(
-        _ string: String,
-        with key: SymmetricKey
-    ) -> Result<Data, Error> {
+    static func decrypt(_ string: String, with key: SymmetricKey) throws -> Data {
         guard let combined = Data(base64Encoded: string) else {
-            return .failure(.notBase64Encoded(string))
+            throw Error.notBase64Encoded(string)
         }
-        return sealedBox(combined: combined)
-            .flatMap { open($0, using: key) }
+        let sealedBox = try sealedBox(combined: combined)
+        return try open(sealedBox, using: key)
     }
     
-    static func decryptToString(
-        _ string: String,
-        with key: SymmetricKey,
-        encoding: String.Encoding = .utf8
-    ) -> String {
-        decrypt(string, with: key)
-            .map { String(data: $0, encoding: encoding) }
-            .replaceNil(with: "")
-            .replaceError(with: "")
+    static func decryptToString(_ string: String, with key: SymmetricKey, encoding: String.Encoding = .utf8) -> String {
+        do {
+            let data = try decrypt(string, with: key)
+            return String(data: data, encoding: encoding) ?? ""
+        }
+        catch {
+            return ""
+        }
     }
 }
 
 private extension Encryption {
     
-    static func sealedBox(combined: Data) -> Result<ChaChaPoly.SealedBox, Error> {
-        Result { try ChaChaPoly.SealedBox(combined: combined) }
-            .mapError { .couldNotMakeSealedBox($0) }
+    static func sealedBox(combined: Data) throws -> ChaChaPoly.SealedBox {
+        do { return try ChaChaPoly.SealedBox(combined: combined) }
+        catch { throw Error.couldNotMakeSealedBox(error) }
     }
     
-    static func open(
-        _ sealedBox: ChaChaPoly.SealedBox,
-        using key: SymmetricKey
-    ) -> Result<Data, Error> {
-        Result { try ChaChaPoly.open(sealedBox, using: key) }
-            .mapError { .couldNotOpenSealedBox($0) }
+    static func open(_ sealedBox: ChaChaPoly.SealedBox, using key: SymmetricKey) throws -> Data {
+        do { return try ChaChaPoly.open(sealedBox, using: key) }
+        catch { throw Error.couldNotOpenSealedBox(error) }
     }
 }

@@ -12,8 +12,8 @@ public struct EncryptedContent: Content {
         self.value = value.base64EncodedString
     }
     
+    @available(macOS, deprecated: 15, message: "This is initializer is for testing purposes only")
     public init(id: String, value: String) {
-        #warning("This initializer is for testing purposes only")
         self.id = id
         self.value = value
     }
@@ -26,7 +26,7 @@ public extension EncryptedContent {
         with key: SymmetricKey,
         decoder: JSONDecoder = .init()
     ) throws -> T {
-        let data = try Encryption.decrypt(self.value, with: key).get()
+        let data = try Encryption.decrypt(self.value, with: key)
         return try decoder.decode(T.self, from: data)
     }
 }
@@ -39,7 +39,7 @@ public extension Content {
         encoder: JSONEncoder = .init()
     ) throws -> EncryptedContent {
         let data = try encoder.encode(self)
-        let encrypted = try Encryption.encrypt(data, with: key).get()
+        let encrypted = try Encryption.encrypt(data, with: key)
         return .init(id: id, value: encrypted)
     }
 }
