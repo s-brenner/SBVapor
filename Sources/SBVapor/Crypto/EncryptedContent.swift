@@ -55,14 +55,3 @@ public extension ContentContainer {
             .decrypted(as: T.self, with: key, decoder: decoder)
     }
 }
-
-//public extension EventLoopFuture where Value: Content {
-//
-//    func encrypted(
-//        with id: String,
-//        key: SymmetricKey,
-//        encoder: JSONEncoder = .init()
-//    ) -> EventLoopFuture<EncryptedContent> {
-//        flatMapThrowing { try $0.encrypted(with: id, key: key, encoder: encoder) }
-//    }
-//}
