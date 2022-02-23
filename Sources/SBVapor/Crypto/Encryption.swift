@@ -2,7 +2,7 @@ import Vapor
 
 public enum Encryption {
     
-    enum Error: AbortError {
+    public enum Error: AbortError {
         case sealFailure(Swift.Error)
         case encodingError(String, String.Encoding)
         case notBase64Encoded(String)
@@ -78,12 +78,20 @@ public enum Encryption {
 private extension Encryption {
     
     static func sealedBox(combined: Data) throws -> ChaChaPoly.SealedBox {
-        do { return try ChaChaPoly.SealedBox(combined: combined) }
-        catch { throw Error.couldNotMakeSealedBox(error) }
+        do {
+            return try ChaChaPoly.SealedBox(combined: combined)
+        }
+        catch {
+            throw Error.couldNotMakeSealedBox(error)
+        }
     }
     
     static func open(_ sealedBox: ChaChaPoly.SealedBox, using key: SymmetricKey) throws -> Data {
-        do { return try ChaChaPoly.open(sealedBox, using: key) }
-        catch { throw Error.couldNotOpenSealedBox(error) }
+        do {
+            return try ChaChaPoly.open(sealedBox, using: key)
+        }
+        catch {
+            throw Error.couldNotOpenSealedBox(error)
+        }
     }
 }
