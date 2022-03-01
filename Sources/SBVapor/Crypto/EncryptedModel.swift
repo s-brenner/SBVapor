@@ -4,9 +4,21 @@ public protocol EncryptedModel: Model {
     
     func encrypt<T: Encodable>(
         _ value: T,
+        to keyPath: ReferenceWritableKeyPath<Self, String>,
+        with crypto: Application.Crypto
+    ) throws
+    
+    func encrypt<T: Encodable>(
+        _ value: T,
         to keyPath: ReferenceWritableKeyPath<Self, String?>,
         with crypto: Application.Crypto
     ) throws
+    
+    func decrypt<T: Decodable>(
+        _ keyPath: ReferenceWritableKeyPath<Self, String>,
+        as type: T.Type,
+        with crypto: Application.Crypto
+    ) throws -> T?
     
     func decrypt<T: Decodable>(
         _ keyPath: ReferenceWritableKeyPath<Self, String?>,
@@ -19,10 +31,26 @@ public extension EncryptedModel {
     
     func encrypt<T: Encodable>(
         _ value: T,
+        to keyPath: ReferenceWritableKeyPath<Self, String>,
+        with crypto: Application.Crypto
+    ) throws {
+        self[keyPath: keyPath] = try crypto.encrypt(value, strategy: .symmetricDatabase)
+    }
+    
+    func encrypt<T: Encodable>(
+        _ value: T,
         to keyPath: ReferenceWritableKeyPath<Self, String?>,
         with crypto: Application.Crypto
     ) throws {
         self[keyPath: keyPath] = try crypto.encrypt(value, strategy: .symmetricDatabase)
+    }
+    
+    func decrypt<T: Decodable>(
+        _ keyPath: ReferenceWritableKeyPath<Self, String>,
+        as type: T.Type = T.self,
+        with crypto: Application.Crypto
+    ) throws -> T? {
+        try crypto.decrypt(self[keyPath: keyPath], into: type, strategy: .symmetricDatabase)
     }
     
     func decrypt<T: Decodable>(
